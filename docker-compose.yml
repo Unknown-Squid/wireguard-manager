@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   wireguard:
     image: linuxserver/wireguard
@@ -8,7 +10,7 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Asia/Manila
-      - SERVERURL=localhost
+      - SERVERURL=YOUR_PUBLIC_IP_OR_DOMAIN
       - SERVERPORT=51820
       - PEERS=1
       - PEERDNS=1.1.1.1
@@ -16,7 +18,17 @@ services:
       - ./config:/config
     ports:
       - "51820:51820/udp"
-    dns:
-      - 1.1.1.1
-      - 8.8.8.8
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: wireguard-api
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: npx ts-node src/server.ts
+    ports:
+      - "3000:3000"
+    environment:
+      - TZ=Asia/Manila
     restart: unless-stopped
