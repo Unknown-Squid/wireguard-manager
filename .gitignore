@@ -11,7 +11,6 @@ src/scripts/
 # =========================
 # Environment variables
 # =========================
-.env
 
 # =========================
 # Database files (VERY IMPORTANT)
@@ -35,10 +34,10 @@ config/
 # OS / IDE junk
 # =========================
 .DS_Store
-.vscode/
 .idea/
 
 # =========================
 # Docker overrides (optional)
 # =========================
 docker-compose.override.yml
+config.bat
