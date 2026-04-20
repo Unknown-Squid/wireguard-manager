@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WireGuard Control Panel</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    h1 { font-size: 28px; }
+    h3 { color: #93c5fd; }
+
+    pre {
+      background: #0b1220;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      color: #22c55e;
+    }
+
+    form {
+      display: flex;
+      gap: 10px;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
+
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+    }
+
+    .btn-primary { background: #3b82f6; }
+    .btn-danger { background: #ef4444; }
+    .btn-secondary { background: #64748b; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #334155;
+      text-align: left;
+    }
+
+    .status {
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    .active { background: #22c55e; color: black; }
+    .inactive { background: #ef4444; color: white; }
+
+    .loading {
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <h1>WireGuard Control Panel</h1>
+
+    <!-- SERVER STATUS -->
+    <div class="card">
+      <h3>Server Status</h3>
+      <pre><%= status %></pre>
+    </div>
+
+    <!-- CREATE PEER -->
+    <div class="card">
+      <h3>Create Peer</h3>
+      <form method="POST" action="/api/peers/create">
+        <input name="name" placeholder="Peer name" required />
+        <button class="btn-primary" type="submit">Create</button>
+      </form>
+    </div>
+
+    <!-- PEER TABLE -->
+    <div class="card">
+      <h3>Peers</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>IP</th>
+            <th>Handshake</th>
+            <th>RX</th>
+            <th>TX</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody id="peerTable">
+          <tr>
+            <td colspan="7" class="loading">Loading peers...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <a href="/logs">View Logs</a>
+    </div>
+
+  </div>
+
+<script>
+/* ======================================================
+   RENDER PEERS
+====================================================== */
+function renderPeers(peers) {
+  const table = document.getElementById("peerTable");
+  table.innerHTML = "";
+
+  if (!peers.length) {
+    table.innerHTML = `
+      <tr>
+        <td colspan="7" class="loading">No peers found</td>
+      </tr>
+    `;
+    return;
+  }
+
+  peers.forEach(peer => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${peer.name || peer.publicKey.slice(0, 10)}</td>
+      <td>${peer.ip}</td>
+      <td>${peer.lastHandshake || "never"}</td>
+      <td>${peer.rx || "0"}</td>
+      <td>${peer.tx || "0"}</td>
+      <td>
+        <span class="status ${peer.active ? "active" : "inactive"}">
+          ${peer.active ? "active" : "inactive"}
+        </span>
+      </td>
+      <td>
+        <div class="actions">
+          <button class="btn-secondary" onclick="downloadConfig('${peer.ip}')">
+            Download
+          </button>
+
+          <button class="btn-danger" onclick="deletePeer('${peer.ip}')">
+            Delete
+          </button>
+        </div>
+      </td>
+    `;
+
+    table.appendChild(tr);
+  });
+}
+
+/* ======================================================
+   LOAD PEERS
+====================================================== */
+async function loadPeers() {
+  try {
+    const res = await fetch("/api/peers/status");
+    const data = await res.json();
+    renderPeers(data);
+  } catch (err) {
+    console.error("Failed to load peers:", err);
+  }
+}
+
+/* ======================================================
+   DELETE PEER
+====================================================== */
+async function deletePeer(ip) {
+  await fetch("/api/peers/" + encodeURIComponent(ip), {
+    method: "DELETE"
+  });
+
+  loadPeers();
+}
+
+/* ======================================================
+   DOWNLOAD CONFIG
+====================================================== */
+function downloadConfig(ip) {
+  window.open(
+    "/api/peers/config/" + encodeURIComponent(ip),
+    "_blank"
+  );
+}
+/* ======================================================
+   AUTO REFRESH
+====================================================== */
+setInterval(loadPeers, 5000);
+loadPeers();
+</script>
+
+</body>
+</html>

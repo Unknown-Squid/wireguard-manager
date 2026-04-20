@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WireGuard Logs</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    h3 {
+      color: #93c5fd;
+      margin-bottom: 10px;
+    }
+
+    pre {
+      background: #0b1220;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: 70vh;
+      font-size: 12px;
+      line-height: 1.4;
+      color: #22c55e;
+      white-space: pre-wrap;
+    }
+
+    a {
+      color: #60a5fa;
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 15px;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      background: #3b82f6;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
+
+    .meta {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="actions">
+      <h1>WireGuard Logs</h1>
+      <button onclick="refreshLogs()">Refresh</button>
+    </div>
+
+    <div class="card">
+      <h3>Container Output</h3>
+
+      <div class="meta">
+        Auto-refresh every 5 seconds
+      </div>
+
+      <pre id="logs"><%= logs %></pre>
+    </div>
+
+    <br />
+    <a href="/">← Back to Dashboard</a>
+
+  </div>
+
+<script>
+async function refreshLogs() {
+  const res = await fetch('/logs/data'); // optional endpoint
+  const text = await res.text();
+  document.getElementById('logs').innerText = text;
+}
+
+// auto refresh (optional)
+setInterval(async () => {
+  try {
+    const res = await fetch('/logs/data');
+    const text = await res.text();
+    document.getElementById('logs').innerText = text;
+  } catch (e) {}
+}, 5000);
+</script>
+
+</body>
+</html>

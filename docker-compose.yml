@@ -1,0 +1,22 @@
+services:
+  wireguard:
+    image: linuxserver/wireguard
+    container_name: wireguard
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Manila
+      - SERVERURL=localhost
+      - SERVERPORT=51820
+      - PEERS=1
+      - PEERDNS=1.1.1.1
+    volumes:
+      - ./config:/config
+    ports:
+      - "51820:51820/udp"
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    restart: unless-stopped

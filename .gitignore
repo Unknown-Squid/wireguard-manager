@@ -1,0 +1,44 @@
+# =========================
+# Dependencies
+# =========================
+node_modules/
+
+# =========================
+# Scripts (if not needed in repo)
+# =========================
+src/scripts/
+
+# =========================
+# Environment variables
+# =========================
+.env
+
+# =========================
+# Database files (VERY IMPORTANT)
+# =========================
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# If database exists inside src accidentally
+src/**/*.db
+
+# =========================
+# WireGuard configs (SECURITY SENSITIVE)
+# =========================
+config/wg_confs/*.conf
+!config/wg_confs/wg0.conf.example
+config/
+
+# =========================
+# OS / IDE junk
+# =========================
+.DS_Store
+.vscode/
+.idea/
+
+# =========================
+# Docker overrides (optional)
+# =========================
+docker-compose.override.yml
